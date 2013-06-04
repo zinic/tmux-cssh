@@ -1,0 +1,101 @@
+#/bin/bash
+
+THIS_BASENAME=`basename $0`
+TMUX_SESSION_NAME=$THIS_BASENAME
+HOSTS=""
+USER=""
+CERTIFICATE=""
+
+syntax() {
+	echo "Syntax: ${THIS_BASENAME} [-h|-u [user]|-c [path to certificate]|-sc [ssh-server-connect-string]|-ts [session-name]|-q]"
+	echo
+
+	echo "-h | --help                                This help."
+	echo
+
+	echo "-u | --user                                User to use."
+	echo
+
+	echo "-c | --certificate                         Path to ssh-certificate to use."
+	echo
+
+	echo "-sc | --ssh-server-connect-string          SSH-connection-string, multiple."
+	echo
+
+	echo "-ts | --tmux-session-name                  Alternative tmux-session-name, default: ${THIS_BASENAME}"
+	echo
+
+	echo "-q | --quiet                               Quiet-mode."
+	echo
+
+	echo "* Other arguments will be interpreted as '-sc'."
+	echo
+}
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+		-h|--help) syntax; exit;;
+		-u|--user) USER="$2"; shift;;
+		-c|--certificate) CERTIFICATE="$2"; shift;;
+		-sc|--ssh-server-connect-string) HOSTS="${HOSTS} $2"; shift;;
+		-ts|--tmux-session-name) TMUX_SESSION_NAME="$2"; shift;;
+		-q|-quiet) QUIET="true";;
+		*) HOSTS="${HOSTS} $1";;
+	esac
+
+	shift
+done
+
+# Hosts available ?
+if [ "${HOSTS}" == "" ]; then
+	echo "* Hosts not given."
+	echo
+
+	syntax
+
+	exit
+fi
+
+initTmuxCall="true"
+
+# Walk through hosts
+for host in `echo ${HOSTS}`; do
+	connectString="${host}"
+
+	# Add user-part
+	if [ "${USER}" != "" ]; then
+		connectString="${USER}@${connectString}"
+	fi
+
+	# Add certificate-part
+	if [ "${CERTIFICATE}" != "" ]; then
+		connectString="-i ${CERTIFICATE} ${connectString}"
+	fi
+
+	# Finalize connect-string
+	connectString="ssh ${connectString}"
+
+	# Output
+	if [ "${QUIET}" != "true" ]; then
+		echo ${connectString}
+	fi
+
+	# First Call, inits the tmux-session
+	if [ "${initTmuxCall}" == "true" ]; then
+		tmux new-session -d -s ${TMUX_SESSION_NAME} "${connectString}"
+
+		initTmuxCall="false"
+	# Attach zu tmux-session
+	else
+		tmux split-window -t ${TMUX_SESSION_NAME} "${connectString}"
+		tmux select-layout -t ${TMUX_SESSION_NAME} tiled
+	fi
+
+done
+
+# Set pane synchronisation
+tmux set-window-option -t ${TMUX_SESSION_NAME} synchronize-panes on
+
+# Attach to tmux session
+tmux attach-session -t ${TMUX_SESSION_NAME}
+
