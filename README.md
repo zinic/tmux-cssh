@@ -19,6 +19,11 @@ $ sudo apt-get install tmux
 
 ## Usage / Example
 
+First, take a look at the help- and syntax-texts:
+```
+$ tmux-cssh --help
+```
+
 You can connect to a single server, with a single connection-data:
 
 ```
