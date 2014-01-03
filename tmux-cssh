@@ -91,7 +91,7 @@ fi
 initTmuxCall="true"
 
 # Walk through hosts
-for host in $(echo ${HOSTS}); do
+for host in ${HOSTS[@]}; do
 	connectString="${host}"
 
 	# Add user-part
@@ -122,7 +122,6 @@ for host in $(echo ${HOSTS}); do
 		tmux split-window -t ${TMUX_SESSION_NAME} "${connectString}"
 		tmux select-layout -t ${TMUX_SESSION_NAME} tiled
 	fi
-
 done
 
 # Set pane synchronisation
