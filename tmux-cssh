@@ -1,6 +1,6 @@
 #!/bin/bash
 
-THIS_BASENAME=`basename $0`
+THIS_BASENAME=$(basename "$0")
 TMUX_SESSION_NAME=$THIS_BASENAME
 HOSTS=""
 USER=""
@@ -50,7 +50,7 @@ while [ $# -gt 0 ]; do
 		-c|--certificate) CERTIFICATE="$2"; shift;;
 		-sc|--ssh-server-connect-string) HOSTS="${HOSTS} $2"; shift;;
 		-ts|--tmux-session-name) TMUX_SESSION_NAME="$2"; shift;;
-		-ns|--new-session) TMUX_SESSION_NAME="${TMUX_SESSION_NAME}_`date +%s`";;
+		-ns|--new-session) TMUX_SESSION_NAME="${TMUX_SESSION_NAME}_$(date +%s)";;
 		-q|-quiet) QUIET="true";;
 		-f|--filename) FILENAME="$FILENAME $2"; shift;;
 		*) HOSTS="${HOSTS} $1";;
@@ -64,7 +64,7 @@ if [ "$FILENAME" != "" ]; then
 	# Walk through all given filenames
 	for filename in $FILENAME; do
 		# Walk through all available connection strings
-		for connectionString in `cat $filename`; do
+		for connectionString in $(cat $filename); do
 			# Add connection string to currently set hosts
 			HOSTS="$HOSTS $connectionString"
 		done
@@ -72,7 +72,7 @@ if [ "$FILENAME" != "" ]; then
 fi
 
 # Check if tmux-session is available
-if [ `tmux ls 2> /dev/null | grep ${TMUX_SESSION_NAME} | wc -l` -gt 0 ]; then
+if [ $(tmux ls 2> /dev/null | grep ${TMUX_SESSION_NAME} | wc -l) -gt 0 ]; then
 	tmux attach -t ${TMUX_SESSION_NAME}
 	exit
 fi
@@ -91,7 +91,7 @@ fi
 initTmuxCall="true"
 
 # Walk through hosts
-for host in `echo ${HOSTS}`; do
+for host in $(echo ${HOSTS}); do
 	connectString="${host}"
 
 	# Add user-part
