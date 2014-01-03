@@ -72,8 +72,8 @@ if [ "$FILENAME" != "" ]; then
 fi
 
 # Check if tmux-session is available
-if (( $(tmux ls 2> /dev/null | grep ${TMUX_SESSION_NAME} | wc -l) > 0 )) ; then
-	tmux attach -t ${TMUX_SESSION_NAME}
+if (( $(tmux ls 2> /dev/null | grep "${TMUX_SESSION_NAME}" | wc -l) > 0 )) ; then
+	tmux attach -t "${TMUX_SESSION_NAME}"
 	exit
 fi
 
@@ -114,19 +114,19 @@ for host in ${HOSTS[@]}; do
 
 	# First Call, inits the tmux-session
 	if [ "${initTmuxCall}" == "true" ]; then
-		tmux new-session -d -s ${TMUX_SESSION_NAME} "${connectString}"
+		tmux new-session -d -s "${TMUX_SESSION_NAME}" "${connectString}"
 
 		initTmuxCall="false"
 	# Attach zu tmux-session
 	else
-		tmux split-window -t ${TMUX_SESSION_NAME} "${connectString}"
-		tmux select-layout -t ${TMUX_SESSION_NAME} tiled
+		tmux split-window -t "${TMUX_SESSION_NAME}" "${connectString}"
+		tmux select-layout -t "${TMUX_SESSION_NAME}" tiled
 	fi
 done
 
 # Set pane synchronisation
-tmux set-window-option -t ${TMUX_SESSION_NAME} synchronize-panes on
+tmux set-window-option -t "${TMUX_SESSION_NAME}" synchronize-panes on
 
 # Attach to tmux session
-tmux attach-session -t ${TMUX_SESSION_NAME}
+tmux attach-session -t "${TMUX_SESSION_NAME}"
 
