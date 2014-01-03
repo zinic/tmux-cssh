@@ -72,7 +72,7 @@ if [ "$FILENAME" != "" ]; then
 fi
 
 # Check if tmux-session is available
-if [ $(tmux ls 2> /dev/null | grep ${TMUX_SESSION_NAME} | wc -l) -gt 0 ]; then
+if (( $(tmux ls 2> /dev/null | grep ${TMUX_SESSION_NAME} | wc -l) > 0 )) ; then
 	tmux attach -t ${TMUX_SESSION_NAME}
 	exit
 fi
