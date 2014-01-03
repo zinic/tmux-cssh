@@ -64,10 +64,10 @@ if [ "$FILENAME" != "" ]; then
 	# Walk through all given filenames
 	for filename in $FILENAME; do
 		# Walk through all available connection strings
-		for connectionString in $(cat $filename); do
+		while read connectionString; do
 			# Add connection string to currently set hosts
 			HOSTS="$HOSTS $connectionString"
-		done
+		done < "${filename}"
 	done
 fi
 
