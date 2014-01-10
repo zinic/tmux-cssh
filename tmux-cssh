@@ -11,10 +11,6 @@ syntax() {
 	echo "Syntax: ${THIS_BASENAME} [-h|-u [user]|-c [path to certificate]|-sc [ssh-server-connect-string]|-ts [session-name]|-q|-f [filename]]"
 	echo
 
-	echo "* Author: Dennis Hafemann"
-	echo "* For a maybe newer version of ${THIS_BASENAME} take a look on https://github.com/dennishafemann/tmux-cssh"
-	echo
-
 	echo "-h | --help                                This help."
 	echo
 
@@ -40,6 +36,9 @@ syntax() {
 	echo
 
 	echo "* Other arguments will be interpreted as '-sc'."
+	echo
+
+	echo "* For a maybe newer version of ${THIS_BASENAME} take a look on https://github.com/dennishafemann/tmux-cssh"
 	echo
 }
 
