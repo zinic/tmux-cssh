@@ -43,6 +43,18 @@ syntax() {
 	echo
 }
 
+# Check if tmux is available
+if [ $(which tmux) == "" ]; then
+	echo "${THIS_BASENAME}"
+	echo
+
+	echo "TMUX is not avaiable."
+	echo
+
+	exit;
+fi
+
+# Walk through parameters
 while [ $# -gt 0 ]; do
 	case "$1" in
 		-h|--help) syntax; exit;;
