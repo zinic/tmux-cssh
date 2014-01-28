@@ -23,6 +23,9 @@ syntax() {
 	echo "-sc | --ssh-server-connect-string          SSH-connection-string, multiple."
 	echo
 
+	echo "-sa | --ssh_args                           SSH connectiong arguments, used on every session."
+	echo
+
 	echo "-ts | --tmux-session-name                  Alternative tmux-session-name, default: ${THIS_BASENAME}"
 	echo
 
@@ -60,6 +63,7 @@ while [ $# -gt 0 ]; do
 		-u|--user) USER="$2"; shift;;
 		-c|--certificate) CERTIFICATE="$2"; shift;;
 		-sc|--ssh-server-connect-string) HOSTS="${HOSTS} $2"; shift;;
+		-sa|--ssh_args) SSH_ARGS="$SSH_ARGS $2"; shift;;
 		-ts|--tmux-session-name) TMUX_SESSION_NAME="$2"; shift;;
 		-ns|--new-session) TMUX_SESSION_NAME="${TMUX_SESSION_NAME}_$(date +%s)";;
 		-q|-quiet) QUIET="true";;
@@ -113,6 +117,11 @@ for host in ${HOSTS[@]}; do
 	# Add certificate-part
 	if [ "${CERTIFICATE}" != "" ]; then
 		connectString="-i ${CERTIFICATE} ${connectString}"
+	fi
+
+    # Add ssh_args-part
+	if [ "${SSH_ARGS}" != "" ]; then
+		connectString="${SSH_ARGS} ${connectString}"
 	fi
 
 	# Finalize connect-string
