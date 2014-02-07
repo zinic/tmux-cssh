@@ -6,6 +6,7 @@ HOSTS=""
 USER=""
 CERTIFICATE=""
 FILENAME=""
+SSH_ARGS=""
 
 syntax() {
 	echo "Syntax: ${THIS_BASENAME} [-h|-u [user]|-c [path to certificate]|-sc [ssh-server-connect-string]|-ts [session-name]|-q|-f [filename]]"
