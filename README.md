@@ -45,3 +45,28 @@ You can connect to multiple server, the short way:
 $ tmux-cssh -u my-user-name my_server 1.2.3.4 11.22.33.44 my_second_server my_third_server my_and_so_on_server
 ```
 
+You can load predefined parameters settings from your user-home-settings-file ~/.tmux-cssh.
+```
+$ tmux-cssh -cs [dev\|test\|productive]_servers
+```
+
+## User-Home-Settings-file ~/.tmux-cssh
+
+This file is located in the called user home directory and includes predefined parameters in a single line.
+
+```
+dev_servers:-sc 10.10.1.1
+test_servers:-sc 10.20.1.1 -sc 10.20.1.2
+productive_servers:-sc 10.30.1.1 -sc 10.30.1.2 -sc 10.30.1.3
+```
+
+Each line can be analysed into to values _key_ and _parameters_, seperated by a colon (:).
+`[key]:[parameters]`
+
+Using the parameters _-cs|--config-setting_ the _key_ name is search via a single string or a (grep valid) regular expression.
+
+```
+$ tmux-cssh -cs [dev\|test\|productive]_servers
+... or ...
+$ tmux-cssh -cs server[1-9]
+```
