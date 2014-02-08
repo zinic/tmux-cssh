@@ -8,8 +8,14 @@ CERTIFICATE=""
 FILENAME=""
 SSH_ARGS=""
 
+# Config-file in home directory
+CONFIG_FILENAME=".tmux-cssh"
+HOME_CONFIG_FILENAME="$(echo ~)/${CONFIG_FILENAME}"
+CONFIG_SETTING_NAME=""
+
+# Outputs script syntax and help
 syntax() {
-	echo "Syntax: ${THIS_BASENAME} [-h|-u [user]|-c [path to certificate]|-sc [ssh-server-connect-string]|-ts [session-name]|-q|-f [filename]]"
+	echo "Syntax: ${THIS_BASENAME} [-h|-u [user]|-c [path to certificate]|-sc [ssh-server-connect-string]|-sa [additional ssh arguments]|-ts [session-name]|-ns|-q|-f [filename]|-cs [name of config-parameters to use]]"
 	echo
 
 	echo "-h | --help                                This help."
@@ -39,11 +45,43 @@ syntax() {
 	echo "-f | --filename                            Filename of textfile to get -sc connection-strings from, line separated."
 	echo
 
+	echo "-cs | --config-setting                     Name of config-settings which should be get from config-file '${HOME_CONFIG_FILENAME}'. Which can be a grep-regular expression to find the name(s)."
+	echo
+
 	echo "* Other arguments will be interpreted as '-sc'."
 	echo
 
 	echo "* For a maybe newer version of ${THIS_BASENAME} take a look on https://github.com/dennishafemann/tmux-cssh"
 	echo
+}
+
+# Output given parameters if not in quiet-mode
+output() {
+	if [ "${QUIET}" != "true" ]; then
+		echo "$@"
+	fi
+}
+
+# Analyse given parameter into environment
+analyseParameters() {
+	# Walk through parameters
+	for param in "$@"; do
+		case "$1" in
+			-h|--help) syntax; exit;;
+			-u|--user) USER="$2"; shift;;
+			-c|--certificate) CERTIFICATE="$2"; shift;;
+			-sc|--ssh-server-connect-string) HOSTS="${HOSTS} $2"; shift;;
+			-sa|--ssh_args) SSH_ARGS="$SSH_ARGS $2"; shift;;
+			-ts|--tmux-session-name) TMUX_SESSION_NAME="$2"; shift;;
+			-ns|--new-session) TMUX_SESSION_NAME="${TMUX_SESSION_NAME}_$(date +%s)";;
+			-q|-quiet) QUIET="true";;
+			-f|--filename) FILENAME="$FILENAME $2"; shift;;
+			-cs|--config-setting) CONFIG_SETTING_NAME="$2"; shift;;
+			*) HOSTS="${HOSTS} $1";;
+		esac
+
+		shift
+	done
 }
 
 # Check if tmux is available
@@ -57,32 +95,47 @@ if [ "$(which tmux)" == "" ]; then
 	exit;
 fi
 
-# Walk through parameters
-while [ $# -gt 0 ]; do
-	case "$1" in
-		-h|--help) syntax; exit;;
-		-u|--user) USER="$2"; shift;;
-		-c|--certificate) CERTIFICATE="$2"; shift;;
-		-sc|--ssh-server-connect-string) HOSTS="${HOSTS} $2"; shift;;
-		-sa|--ssh_args) SSH_ARGS="$SSH_ARGS $2"; shift;;
-		-ts|--tmux-session-name) TMUX_SESSION_NAME="$2"; shift;;
-		-ns|--new-session) TMUX_SESSION_NAME="${TMUX_SESSION_NAME}_$(date +%s)";;
-		-q|-quiet) QUIET="true";;
-		-f|--filename) FILENAME="$FILENAME $2"; shift;;
-		*) HOSTS="${HOSTS} $1";;
-	esac
+# Check main parameters
+analyseParameters $@
 
-	shift
-done
+# Check if a config-settings name is given
+if [ "${CONFIG_SETTING_NAME}" != "" ]; then
+	# If home-config-file available
+	if [ -f "${HOME_CONFIG_FILENAME}" ]; then
+		# Read every line from config-settings file
+		while read configSettingsRow; do
+			# Seperate Name and parameters
+			configSettingsName=$(echo ${configSettingsRow} | cut -d ":" -f 1)
+			configSettingsParameters=$(echo ${configSettingsRow} | cut -d ":" -f 2)
+
+			# Match name against given settings-name
+			matched=$(echo ${configSettingsName} | grep "^${CONFIG_SETTING_NAME}$")
+
+			# Machted ?
+			if [ "${matched}" != "" ]; then
+				output "* Matched config-settings '${matched}', analysing parameters."
+
+				# Check config parameters
+				analyseParameters ${configSettingsParameters}
+			fi
+		done < "${HOME_CONFIG_FILENAME}"
+	else
+		output "No config-settings-file '${HOME_CONFIG_FILENAME}' available."
+	fi
+fi
 
 # Check if filenames with connection-strings are given
 if [ "$FILENAME" != "" ]; then
+	output "* Reading file '${FILENAME}' with host-connection-string."
+
 	# Walk through all given filenames
 	for filename in $FILENAME; do
 		# Walk through all available connection strings
-		while read connectionString; do
+		while read connHost; do
+			output "* Adding host '${connectionString}'"
+
 			# Add connection string to currently set hosts
-			HOSTS="$HOSTS $connectionString"
+			HOSTS="$HOSTS $connHost"
 		done < "${filename}"
 	done
 fi
@@ -93,11 +146,9 @@ if (( $(tmux ls 2> /dev/null | grep "${TMUX_SESSION_NAME}" | wc -l) > 0 )) ; the
 	exit
 fi
 
-
 # Hosts available ?
 if [ "${HOSTS}" == "" ]; then
-	echo "* Hosts not given."
-	echo
+	output "* Hosts not given."
 
 	syntax
 
@@ -129,9 +180,7 @@ for host in ${HOSTS[@]}; do
 	connectString="ssh ${connectString}"
 
 	# Output
-	if [ "${QUIET}" != "true" ]; then
-		echo ${connectString}
-	fi
+	output "* Connecting '${connectString}'"
 
 	# First Call, inits the tmux-session
 	if [ "${initTmuxCall}" == "true" ]; then
