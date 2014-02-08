@@ -30,7 +30,7 @@ syntax() {
 	echo "-sc | --ssh-server-connect-string          SSH-connection-string, multiple."
 	echo
 
-	echo "-sa | --ssh_args                           SSH connectiong arguments, used on every session."
+	echo "-sa | --ssh_args                           SSH connection arguments, used on every session."
 	echo
 
 	echo "-ts | --tmux-session-name                  Alternative tmux-session-name, default: ${THIS_BASENAME}"
