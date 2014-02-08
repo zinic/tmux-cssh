@@ -47,7 +47,7 @@ syntax() {
 }
 
 # Check if tmux is available
-if [ $(which tmux) == "" ]; then
+if [ "$(which tmux)" == "" ]; then
 	echo "${THIS_BASENAME}"
 	echo
 
