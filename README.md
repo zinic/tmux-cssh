@@ -71,3 +71,33 @@ $ tmux-cssh -cs [dev\|test\|productive]_servers
 ... or ...
 $ tmux-cssh -cs server[1-9]
 ```
+
+### Combine parameters
+
+_tmux-cssh_ adds all given parameters to it's environment before calling the final _tmux_-session. So that means all parameters can be combined in each way.
+
+*Call*
+
+```
+$ tmux-cssh -f /tmp/temp-server-hosts -cs "fixed_dev_server\|auth_user"
+```
+
+*Host file -f /tmp/temp-server-hosts*
+
+```
+10.10.1.1
+dev_server_1
+```
+
+*Config-Settings name fix_dev_server in ./tmux-cssh*
+
+```
+auth_user:-u me_as_an_auth_user
+fix_dev_server:10.10.1.10 10.10.1.20 10.10.1.30
+```
+
+*Finally tmux-cssh works like if you called ...*
+
+```
+$ tmux-cssh -u me_as_an_auth_user -sc 10.10.1.1 -sc dev_server_1 -sc 10.10.1.10 -sc 10.10.1.20 -sc 10.10.1.30
+```
