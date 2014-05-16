@@ -45,7 +45,7 @@ syntax() {
 	echo "-f | --filename                            Filename of textfile to get -sc connection-strings from, line separated."
 	echo
 
-	echo "-cs | --config-setting                     Name of config-settings which should be get from config-file '${HOME_CONFIG_FILENAME}'. Which can be a grep-regular expression to find the name(s)."
+	echo "-cs | --config-setting                     Name of config-settings which should be gotten from config-file '${HOME_CONFIG_FILENAME}'. This can be a grep-regular expression to find the name(s)."
 	echo
 
 	echo "* Other arguments will be interpreted as '-sc'."
