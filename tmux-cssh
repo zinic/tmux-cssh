@@ -187,12 +187,13 @@ for host in ${HOSTS[@]}; do
 		tmux new-session -d -s "${TMUX_SESSION_NAME}" "${connectString}"
 
 		initTmuxCall="false"
-	# Attach zu tmux-session
 	else
 		tmux split-window -t "${TMUX_SESSION_NAME}" "${connectString}"
-		tmux select-layout -t "${TMUX_SESSION_NAME}" tiled
 	fi
 done
+
+# Tile the panes
+tmux select-layout -t "${TMUX_SESSION_NAME}" tiled
 
 # Set pane synchronisation
 tmux set-window-option -t "${TMUX_SESSION_NAME}" synchronize-panes on
