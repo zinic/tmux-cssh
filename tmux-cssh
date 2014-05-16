@@ -186,11 +186,21 @@ for host in ${HOSTS[@]}; do
 	if [ "${initTmuxCall}" == "true" ]; then
 		tmux new-session -d -s "${TMUX_SESSION_NAME}" "${connectString}"
 
-		initTmuxCall="false"
+    # If our initial ssh connection has failed, do not mark initTmuxCall as false since tmux will have aborted.
+    # We'll need to try to start a new tmux session for the next host.
+    if (( $(tmux ls 2> /dev/null | grep "${TMUX_SESSION_NAME}" | wc -l) > 0 )) ; then
+		  initTmuxCall="false"
+    fi
 	else
 		tmux split-window -t "${TMUX_SESSION_NAME}" "${connectString}"
 	fi
 done
+
+# If no session was able to start, say so and just exit.
+if (( $(tmux ls 2> /dev/null | grep "${TMUX_SESSION_NAME}" | wc -l) == 0 )) ; then
+  echo "All connections have failed."
+  exit 1
+fi
 
 # Tile the panes
 tmux select-layout -t "${TMUX_SESSION_NAME}" tiled
