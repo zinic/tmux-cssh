@@ -15,7 +15,7 @@ CONFIG_SETTING_NAME=""
 
 # Outputs script syntax and help
 syntax() {
-	echo "Syntax: ${THIS_BASENAME} [-h|-u [user]|-c [path to certificate]|-sc [ssh-server-connect-string]|-sa [additional ssh arguments]|-ts [session-name]|-ns|-set|-q|-f [filename]|-cs [name of config-parameters to use]]"
+	echo "Syntax: ${THIS_BASENAME} [-h|-u [user]|-c|--certificate|-i|--identity [path to certificate-/identity-file]|-sc [ssh-server-connect-string]|-sa [additional ssh arguments]|-ts [session-name]|-ns|-set|-q|-f [filename]|-cs [name of config-parameters to use]]"
 	echo
 
 	echo "-h | --help                                This help."
@@ -24,7 +24,8 @@ syntax() {
 	echo "-u | --user                                User to use."
 	echo
 
-	echo "-i | --identity                            Path to ssh key to use."
+	echo "-c | --certificate"
+	echo "-i | --identity                            Path to ssh key (identity/-certificate-file) to use."
 	echo
 
 	echo "-sc | --ssh-server-connect-string          SSH-connection-string, multiple."
@@ -72,7 +73,7 @@ analyseParameters() {
 		case "$1" in
 			-h|--help) syntax; exit;;
 			-u|--user) USER="$2"; shift;;
-			-i|--identity) IDENTITY="$2"; shift;;
+			-c|--certificate|-i|--identity) IDENTITY="$2"; shift;;
 			-sc|--ssh-server-connect-string) HOSTS="${HOSTS} $2"; shift;;
 			-sa|--ssh_args) SSH_ARGS="$SSH_ARGS $2"; shift;;
 			-ts|--tmux-session-name) TMUX_SESSION_NAME="$2"; shift;;
