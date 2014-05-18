@@ -15,7 +15,7 @@ CONFIG_SETTING_NAME=""
 
 # Outputs script syntax and help
 syntax() {
-	echo "Syntax: ${THIS_BASENAME} [-h|-u [user]|-c [path to certificate]|-sc [ssh-server-connect-string]|-sa [additional ssh arguments]|-ts [session-name]|-ns|-q|-f [filename]|-cs [name of config-parameters to use]]"
+	echo "Syntax: ${THIS_BASENAME} [-h|-u [user]|-c [path to certificate]|-sc [ssh-server-connect-string]|-sa [additional ssh arguments]|-ts [session-name]|-ns|-set|-q|-f [filename]|-cs [name of config-parameters to use]]"
 	echo
 
 	echo "-h | --help                                This help."
@@ -34,6 +34,9 @@ syntax() {
 	echo
 
 	echo "-ts | --tmux-session-name                  Alternative tmux-session-name, default: ${THIS_BASENAME}"
+	echo
+
+	echo "-set | --set-epoch-time                    Like -ts, but quickly set the current epoch time, overwrites -ts"
 	echo
 
 	echo "-ns | --new-session                        Initializes a new session, like -ts [name]."
@@ -73,6 +76,7 @@ analyseParameters() {
 			-sc|--ssh-server-connect-string) HOSTS="${HOSTS} $2"; shift;;
 			-sa|--ssh_args) SSH_ARGS="$SSH_ARGS $2"; shift;;
 			-ts|--tmux-session-name) TMUX_SESSION_NAME="$2"; shift;;
+			-set|--set-epoch-time) TMUX_SESSION_NAME="$(date +"%s")";;
 			-ns|--new-session) TMUX_SESSION_NAME="${TMUX_SESSION_NAME}_$(date +%s)";;
 			-q|-quiet) QUIET="true";;
 			-f|--filename) FILENAME="$FILENAME $2"; shift;;
