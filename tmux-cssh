@@ -137,7 +137,7 @@ if [ "$FILENAME" != "" ]; then
 	for filename in $FILENAME; do
 		# Walk through all available connection strings
 		while read connHost; do
-			output "* Adding host '${connectionString}'"
+			output "* Adding host '${connHost}'"
 
 			# Add connection string to currently set hosts
 			HOSTS="$HOSTS $connHost"
