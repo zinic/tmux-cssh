@@ -93,7 +93,7 @@ $ tmux-cssh -f /tmp/temp-server-hosts -cs "fixed_dev_server\|auth_user"
 dev_server_1
 ```
 
-**Config-Settings name fix_dev_server in ./tmux-cssh**
+**Config-Settings name fix_dev_server in ~/.tmux-cssh**
 
 ```
 auth_user:-u me_as_an_auth_user
