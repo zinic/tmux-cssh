@@ -46,10 +46,10 @@ syntax() {
 	echo "-q | --quiet                               Quiet-mode."
 	echo
 
-	echo "-f | --filename                            Filename of textfile to get -sc connection-strings from, line separated."
+	echo "-f | --filename                            Filename of textfile to get -sc connection-strings from, line separated, multiple."
 	echo
 
-	echo "-cs | --config-setting                     Name of config-settings which should be gotten from config-file '${HOME_CONFIG_FILENAME}'. This can be a grep-regular expression to find the name(s)."
+	echo "-cs | --config-setting                     Name of config-settings which should be gotten from config-file '${HOME_CONFIG_FILENAME}'. This can be a grep-regular expression to find the name(s), multiple."
 	echo
 
 	echo "* Other arguments will be interpreted as '-sc'."
@@ -75,18 +75,57 @@ analyseParameters() {
 			-u|--user) USER="$2"; shift;;
 			-c|--certificate|-i|--identity) IDENTITY="$2"; shift;;
 			-sc|--ssh-server-connect-string) HOSTS="${HOSTS} $2"; shift;;
-			-sa|--ssh_args) SSH_ARGS="$SSH_ARGS $2"; shift;;
+			-sa|--ssh_args) SSH_ARGS="${SSH_ARGS} $2"; shift;;
 			-ts|--tmux-session-name) TMUX_SESSION_NAME="$2"; shift;;
 			-set|--set-epoch-time) TMUX_SESSION_NAME="$(date +"%s")";;
 			-ns|--new-session) TMUX_SESSION_NAME="${TMUX_SESSION_NAME}_$(date +%s)";;
 			-q|-quiet) QUIET="true";;
-			-f|--filename) FILENAME="$FILENAME $2"; shift;;
-			-cs|--config-setting) CONFIG_SETTING_NAME="$2"; shift;;
+			-f|--filename) FILENAME="${FILENAME} $2"; shift;;
+			-cs|--config-setting) 
+				get_parameters_from_config_settings_name "$2"
+				shift;;
 			*) HOSTS="${HOSTS} $1";;
 		esac
 
 		shift
 	done
+}
+
+get_parameters_from_config_settings_name() {
+	configSettingName=$1
+
+	# Check if a config-settings name is given
+	if [ "${configSettingName}" != "" ]; then
+		# If home-config-file available
+		if [ -f "${HOME_CONFIG_FILENAME}" ]; then
+			output "* Searching for config setting name '${configSettingName}' ..."
+
+			# Read every line from config-settings file
+			analyseParametersString=""
+
+			while read configSettingsRow; do
+				# Seperate Name and parameters
+				configSettingsName=$(echo ${configSettingsRow} | cut -d ":" -f 1)
+				configSettingsParameters=$(echo ${configSettingsRow} | cut -d ":" -f 2)
+
+				# Match name against given settings-name
+				matched=$(echo ${configSettingsName} | grep "^${configSettingName}$")
+
+				# Matched ?
+				if [ "${matched}" != "" ]; then
+					output "* Matched config-settings '${matched}', analysing parameters, ${configSettingsParameters} ..."
+					analyseParametersString="${analyseParametersString} ${configSettingsParameters}"
+				fi
+			done < "${HOME_CONFIG_FILENAME}"
+
+			# Analyse parameters string
+			if [ "${analyseParametersString}" != "" ]; then
+					analyseParameters ${analyseParametersString}
+			fi
+		else
+			output "No config-settings-file '${HOME_CONFIG_FILENAME}' available."
+		fi
+	fi
 }
 
 # Check if tmux is available
@@ -102,32 +141,6 @@ fi
 
 # Check main parameters
 analyseParameters $@
-
-# Check if a config-settings name is given
-if [ "${CONFIG_SETTING_NAME}" != "" ]; then
-	# If home-config-file available
-	if [ -f "${HOME_CONFIG_FILENAME}" ]; then
-		# Read every line from config-settings file
-		while read configSettingsRow; do
-			# Seperate Name and parameters
-			configSettingsName=$(echo ${configSettingsRow} | cut -d ":" -f 1)
-			configSettingsParameters=$(echo ${configSettingsRow} | cut -d ":" -f 2)
-
-			# Match name against given settings-name
-			matched=$(echo ${configSettingsName} | grep "^${CONFIG_SETTING_NAME}$")
-
-			# Machted ?
-			if [ "${matched}" != "" ]; then
-				output "* Matched config-settings '${matched}', analysing parameters."
-
-				# Check config parameters
-				analyseParameters ${configSettingsParameters}
-			fi
-		done < "${HOME_CONFIG_FILENAME}"
-	else
-		output "No config-settings-file '${HOME_CONFIG_FILENAME}' available."
-	fi
-fi
 
 # Check if filenames with connection-strings are given
 if [ "$FILENAME" != "" ]; then
@@ -147,7 +160,7 @@ fi
 
 # Check if tmux-session is available
 if (( $(tmux ls 2> /dev/null | grep "${TMUX_SESSION_NAME}" | wc -l) > 0 )) ; then
-	tmux attach -t "${TMUX_SESSION_NAME}"
+	echo tmux attach -t "${TMUX_SESSION_NAME}"
 	exit
 fi
 
