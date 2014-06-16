@@ -76,7 +76,24 @@ $ tmux-cssh -cs [dev\|test\|productive]_servers
 $ tmux-cssh -cs server[1-9]
 ```
 
-### Combine parameters
+### Multiple -cs
+
+With support of multiple -cs parameters you can now be more flexible.
+
+```
+clients:-sc 1.1.1.1 -sc 1.1.1.2
+servers:-sc 10.10.10.1 -sc 10.10.10.2
+all:-cs clients -cs servers
+```
+
+```
+$ tmux-cssh -cs clients
+$ tmux-cssh -cs servers
+$ tmux-cssh -cs clients -cs servers
+$ tmux-cssh -cs all
+```
+
+## Combine parameters
 
 _tmux-cssh_ adds all given parameters to it's environment before calling the final _tmux_-session. So that means all parameters can be combined in each way.
 
