@@ -127,5 +127,5 @@ $ tmux-cssh -u me_as_an_auth_user -sc 10.10.1.1 -sc dev_server_1 -sc 10.10.1.10 
 
 There is a simple, useful and comfortable GUI set on top of tmux-cssh: TMUX-CSSH-GUI
 
-<a href="https://github.com/dennishafemann/tmux-cssh-gui>TMUX-CSSH-GUI @ github</a>
+<a href="https://github.com/dennishafemann/tmux-cssh-gui">TMUX-CSSH-GUI @ github</a>
 
