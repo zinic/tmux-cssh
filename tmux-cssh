@@ -7,6 +7,7 @@ USER=""
 IDENTITY=""
 FILENAME=""
 SSH_ARGS=""
+SYNCHRONIZE_PANES="true"
 
 # Config-file in home directory
 CONFIG_FILENAME=".tmux-cssh"
@@ -15,7 +16,7 @@ CONFIG_SETTING_NAME=""
 
 # Outputs script syntax and help
 syntax() {
-	echo "Syntax: ${THIS_BASENAME} [-h|-u [user]|-c|--certificate|-i|--identity [path to certificate-/identity-file]|-sc [ssh-server-connect-string]|-sa [additional ssh arguments]|-ts [session-name]|-ns|-set|-q|-f [filename]|-cs [name of config-parameters to use]]"
+	echo "Syntax: ${THIS_BASENAME} [-h|-u [user]|-c|--certificate|-i|--identity [path to certificate-/identity-file]|-sc [ssh-server-connect-string]|-sa [additional ssh arguments]|-ts [session-name]|-ns|-set|-q|-f [filename]|-cs [name of config-parameters to use]|[-dc/ds]]"
 	echo
 
 	echo "-h | --help                                This help."
@@ -52,6 +53,10 @@ syntax() {
 	echo "-cs | --config-setting                     Name of config-settings which should be gotten from config-file '${HOME_CONFIG_FILENAME}'. This can be a grep-regular expression to find the name(s), multiple."
 	echo
 
+	echo "-dc | --dont-clusterize                    Don't clusterize ..."
+	echo "-ds | --dont-synchronize                   Don't synchronize keyboard in panesm, default: tmux should synchronize."
+	echo
+
 	echo "* Other arguments will be interpreted as '-sc'."
 	echo
 
@@ -84,6 +89,7 @@ analyseParameters() {
 			-cs|--config-setting) 
 				get_parameters_from_config_settings_name "$2"
 				shift;;
+			-dc|--dont-clusterize|-ds|--dont-synchronize) SYNCHRONIZE_PANES="false";;
 			*) HOSTS="${HOSTS} $1";;
 		esac
 
@@ -128,6 +134,20 @@ get_parameters_from_config_settings_name() {
 	fi
 }
 
+# Set synchronization for given tmux-session-names
+# Parameter: $1 = true if tmux should synchronize panes
+#            $2 = TMUX-Session-Name
+synchronizePanes() {
+	# Set pane synchronisation
+	if [ "$1" == "true" ]; then
+		syncValue='on'
+	else
+		syncValue='off'
+	fi
+
+	tmux set-window-option -t "$2" synchronize-panes ${syncValue}
+}
+
 # Check if tmux is available
 if [ "$(which tmux)" == "" ]; then
 	echo "${THIS_BASENAME}"
@@ -160,7 +180,11 @@ fi
 
 # Check if tmux-session is available
 if (( $(tmux ls 2> /dev/null | grep "${TMUX_SESSION_NAME}" | wc -l) > 0 )) ; then
-	echo tmux attach -t "${TMUX_SESSION_NAME}"
+	# Setup synchronizing panes
+	synchronizePanes ${SYNCHRONIZE_PANES} ${TMUX_SESSION_NAME}
+
+	# Attach to available tmux-session
+	tmux attach -t "${TMUX_SESSION_NAME}"
 	exit
 fi
 
@@ -221,8 +245,8 @@ if (( $(tmux ls 2> /dev/null | grep "${TMUX_SESSION_NAME}" | wc -l) == 0 )) ; th
   exit 1
 fi
 
-# Set pane synchronisation
-tmux set-window-option -t "${TMUX_SESSION_NAME}" synchronize-panes on
+# Setup synchronizing panes
+synchronizePanes ${SYNCHRONIZE_PANES} ${TMUX_SESSION_NAME}
 
 # Attach to tmux session
 tmux attach-session -t "${TMUX_SESSION_NAME}"
