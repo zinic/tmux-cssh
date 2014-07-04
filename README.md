@@ -54,6 +54,11 @@ You can load predefined parameters settings from your user-home-settings-file ~/
 $ tmux-cssh -cs [dev\|test\|productive]_servers
 ```
 
+If you want to just open your multiple server in a grid, but don't want every keystrokes shared around you can add the parameter for "don't synchronize panes".
+```
+$ tmux-cssh -cs [dev\|test\|productive]_servers -ds
+```
+
 ## User-Home-Settings-file ~/.tmux-cssh
 
 This file is located in the user home directory, from _tmux-cssh_-calling user, and includes predefined parameters in a single line.
@@ -128,4 +133,3 @@ $ tmux-cssh -u me_as_an_auth_user -sc 10.10.1.1 -sc dev_server_1 -sc 10.10.1.10 
 There is a simple, useful and comfortable GUI set on top of tmux-cssh: TMUX-CSSH-GUI
 
 <a href="https://github.com/dennishafemann/tmux-cssh-gui">TMUX-CSSH-GUI @ github</a>
-
