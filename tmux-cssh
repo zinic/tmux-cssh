@@ -54,7 +54,7 @@ syntax() {
 	echo
 
 	echo "-dc | --dont-clusterize                    Don't clusterize ..."
-	echo "-ds | --dont-synchronize                   Don't synchronize keyboard in panesm, default: tmux should synchronize."
+	echo "-ds | --dont-synchronize                   Don't synchronize keyboard in panes, default: tmux should synchronize."
 	echo
 
 	echo "* Other arguments will be interpreted as '-sc'."
