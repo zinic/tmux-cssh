@@ -160,7 +160,7 @@ if [ "$(which tmux)" == "" ]; then
 fi
 
 # Check main parameters
-analyseParameters $@
+analyseParameters "$@"
 
 # Check if filenames with connection-strings are given
 if [ "$FILENAME" != "" ]; then
