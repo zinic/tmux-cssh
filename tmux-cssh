@@ -79,7 +79,13 @@ analyseParameters() {
 			-h|--help) syntax; exit;;
 			-u|--user) USER="$2"; shift;;
 			-c|--certificate|-i|--identity) IDENTITY="$2"; shift;;
-			-sc|--ssh-server-connect-string) HOSTS="${HOSTS} $2"; shift;;
+			-sc|--ssh-server-connect-string) 
+                          if [ "$HOSTS" == "" ]; then
+                            HOSTS="$2"
+                          else
+                            HOSTS="${HOSTS},$2"
+                          fi
+                          shift;;
 			-sa|--ssh_args) SSH_ARGS="${SSH_ARGS} $2"; shift;;
 			-ts|--tmux-session-name) TMUX_SESSION_NAME="$2"; shift;;
 			-set|--set-epoch-time) TMUX_SESSION_NAME="$(date +"%s")";;
@@ -200,6 +206,7 @@ fi
 initTmuxCall="true"
 
 # Walk through hosts
+IFS=","
 for host in ${HOSTS[@]}; do
 	connectString="${host}"
 
@@ -238,6 +245,7 @@ for host in ${HOSTS[@]}; do
     tmux select-layout -t "${TMUX_SESSION_NAME}" tiled
 	fi
 done
+unset IFS
 
 # If no session was able to start, say so and just exit.
 if (( $(tmux ls 2> /dev/null | grep "${TMUX_SESSION_NAME}" | wc -l) == 0 )) ; then
