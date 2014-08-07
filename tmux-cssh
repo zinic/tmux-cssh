@@ -96,7 +96,13 @@ analyseParameters() {
 				get_parameters_from_config_settings_name "$2"
 				shift;;
 			-dc|--dont-clusterize|-ds|--dont-synchronize) SYNCHRONIZE_PANES="false";;
-			*) HOSTS="${HOSTS} $1";;
+			*)
+				if [ "$HOSTS" == "" ]; then
+					HOSTS="$1"
+				else
+					HOSTS="${HOSTS},$1"
+				fi
+			;;
 		esac
 
 		shift
