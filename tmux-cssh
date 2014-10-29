@@ -219,7 +219,21 @@ initTmuxCall="true"
 IFS=","
 
 for host in ${HOSTS[@]}; do
-	connectString="${host}"
+	connectString=""
+	
+	# Separate host and port, if given
+	if [ $(expr index ${host} :) != 0 ]; then
+		# Remove port from string
+		hostname=${host/:*}
+		connectString=${hostname}
+		
+		# Remove host from string
+		port=${host/*:}
+
+		connectString="-p ${port} ${connectString}"
+	else
+		connectString=${host}
+	fi
 
 	# Add user-part
 	if [ "${USER}" != "" ]; then
