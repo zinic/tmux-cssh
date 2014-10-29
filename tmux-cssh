@@ -80,10 +80,12 @@ analyseParameters() {
 			-u|--user) USER="$2"; shift;;
 			-c|--certificate|-i|--identity) IDENTITY="$2"; shift;;
 			-sc|--ssh-server-connect-string) 
-				if [ "$HOSTS" == "" ]; then
-					HOSTS="$2"
-				else
-					HOSTS="${HOSTS},$2"
+				if [ "$2" != "" ]; then
+					if [ "$HOSTS" == "" ]; then
+						HOSTS="$2"
+					else
+						HOSTS="${HOSTS},$2"
+					fi
 				fi
 				shift;;
 			-sa|--ssh_args) SSH_ARGS="${SSH_ARGS} $2"; shift;;
@@ -97,10 +99,12 @@ analyseParameters() {
 				shift;;
 			-dc|--dont-clusterize|-ds|--dont-synchronize) SYNCHRONIZE_PANES="false";;
 			*)
-				if [ "$HOSTS" == "" ]; then
-					HOSTS="$1"
-				else
-					HOSTS="${HOSTS},$1"
+				if [ "$1" != "" ]; then
+					if [ "$HOSTS" == "" ]; then
+						HOSTS="$1"
+					else
+						HOSTS="${HOSTS},$1"
+					fi
 				fi
 			;;
 		esac
