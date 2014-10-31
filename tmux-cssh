@@ -220,17 +220,17 @@ IFS=","
 
 for host in ${HOSTS[@]}; do
 	connectString=""
+	hostname=""
+	port=""
 	
 	# Separate host and port, if given
-	if [ $(expr index ${host} :) != 0 ]; then
+	if echo ${host} | grep -q ':'; then
 		# Remove port from string
 		hostname=${host/:*}
 		connectString=${hostname}
 		
 		# Remove host from string
 		port=${host/*:}
-
-		connectString="-p ${port} ${connectString}"
 	else
 		connectString=${host}
 	fi
@@ -238,6 +238,11 @@ for host in ${HOSTS[@]}; do
 	# Add user-part
 	if [ "${USER}" != "" ]; then
 		connectString="${USER}@${connectString}"
+	fi
+
+	# Port
+	if [ "${port}" != "" ]; then
+		connectString="-p ${port} ${connectString}"
 	fi
 
 	# Add identity-part
