@@ -6,6 +6,7 @@ HOSTS=""
 USER=""
 IDENTITY=""
 FILENAME=""
+SSH_COMMAND="ssh"
 SSH_ARGS=""
 SYNCHRONIZE_PANES="true"
 
@@ -34,6 +35,9 @@ syntax() {
 
 	echo "-sa | --ssh_args                           SSH connection arguments, used on every session."
 	echo
+
+        echo "-ss | --ssh_command                        SSH command to use."
+        echo
 
 	echo "-ts | --tmux-session-name                  Alternative tmux-session-name, default: ${THIS_BASENAME}"
 	echo
@@ -79,7 +83,7 @@ analyseParameters() {
 			-h|--help) syntax; exit;;
 			-u|--user) USER="$2"; shift;;
 			-c|--certificate|-i|--identity) IDENTITY="$2"; shift;;
-			-sc|--ssh-server-connect-string) 
+			-sc|--ssh-server-connect-string)
 				if [ "$2" != "" ]; then
 					if [ "$HOSTS" == "" ]; then
 						HOSTS="$2"
@@ -89,12 +93,13 @@ analyseParameters() {
 				fi
 				shift;;
 			-sa|--ssh_args) SSH_ARGS="${SSH_ARGS} $2"; shift;;
+                        -ss|--ssh_command) SSH_COMMAND="$2"; shift;;
 			-ts|--tmux-session-name) TMUX_SESSION_NAME="$2"; shift;;
 			-set|--set-epoch-time) TMUX_SESSION_NAME="$(date +"%s")";;
 			-ns|--new-session) TMUX_SESSION_NAME="${TMUX_SESSION_NAME}_$(date +%s)";;
 			-q|-quiet) QUIET="true";;
 			-f|--filename) FILENAME="${FILENAME} $2"; shift;;
-			-cs|--config-setting) 
+			-cs|--config-setting)
 				get_parameters_from_config_settings_name "$2"
 				shift;;
 			-dc|--dont-clusterize|-ds|--dont-synchronize) SYNCHRONIZE_PANES="false";;
@@ -222,13 +227,13 @@ for host in ${HOSTS[@]}; do
 	connectString=""
 	hostname=""
 	port=""
-	
+
 	# Separate host and port, if given
 	if echo ${host} | grep -q ':'; then
 		# Remove port from string
 		hostname=${host/:*}
 		connectString=${hostname}
-		
+
 		# Remove host from string
 		port=${host/*:}
 	else
@@ -256,7 +261,7 @@ for host in ${HOSTS[@]}; do
 	fi
 
 	# Finalize connect-string
-	connectString="ssh ${connectString}"
+	connectString="${SSH_COMMAND} ${connectString}"
 
 	# Output
 	output "* Connecting '${connectString}'"
@@ -289,4 +294,3 @@ synchronizePanes ${SYNCHRONIZE_PANES} ${TMUX_SESSION_NAME}
 
 # Attach to tmux session
 tmux attach-session -t "${TMUX_SESSION_NAME}"
-
