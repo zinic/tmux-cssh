@@ -9,6 +9,7 @@ FILENAME=""
 SSH_COMMAND="ssh"
 SSH_ARGS=""
 SYNCHRONIZE_PANES="true"
+TMUX_LAYOUT="tiled"
 
 # Config-file in home directory
 CONFIG_FILENAME=".tmux-cssh"
@@ -42,6 +43,9 @@ syntax() {
 
 	echo "-ts | --tmux-session-name                  Alternative tmux-session-name, default: ${THIS_BASENAME}"
 	echo
+
+        echo "-tl | --tmuxlayout                         Use different layouts (tiled, even-vertical... ) see in man tmux for more information"
+        echo
 
 	echo "-set | --set-epoch-time                    Like -ts, but quickly set the current epoch time, overwrites -ts"
 	echo
@@ -96,6 +100,7 @@ analyseParameters() {
 			-sa|--ssh_args) SSH_ARGS="${SSH_ARGS} $2"; shift;;
 			-ss|-csc|--ssh_command,--custom-ssh-command) SSH_COMMAND="$2"; shift;;
 			-ts|--tmux-session-name) TMUX_SESSION_NAME="$2"; shift;;
+                        -tl|--tmuxlayout) TMUX_LAYOUT="$2"; shift;;
 			-set|--set-epoch-time) TMUX_SESSION_NAME="$(date +"%s")";;
 			-ns|--new-session) TMUX_SESSION_NAME="${TMUX_SESSION_NAME}_$(date +%s)";;
 			-q|-quiet) QUIET="true";;
@@ -285,7 +290,7 @@ for host in ${HOSTS[@]}; do
     fi
 	else
     tmux split-window -t "${TMUX_SESSION_NAME}" "${connectString}" && \
-    tmux select-layout -t "${TMUX_SESSION_NAME}" tiled
+    tmux select-layout -t "${TMUX_SESSION_NAME}" "${TMUX_LAYOUT}"
 	fi
 done
 
