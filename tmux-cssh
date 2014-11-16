@@ -100,7 +100,14 @@ analyseParameters() {
 			-sa|--ssh_args) SSH_ARGS="${SSH_ARGS} $2"; shift;;
 			-ss|-csc|--ssh_command,--custom-ssh-command) SSH_COMMAND="$2"; shift;;
 			-ts|--tmux-session-name) TMUX_SESSION_NAME="$2"; shift;;
-			-tl|--tmuxlayout) TMUX_LAYOUT="$2"; shift;;
+			-tl|--tmuxlayout)
+				case "$2" in
+					h|h) TMUX_LAYOUT="even-horizontal";;
+					v|V) TMUX_LAYOUT="even-vertical";;
+					t|T) TMUX_LAYOUT="tiled";;
+					*) TMUX_LAYOUT="$2";;
+				esac
+			shift;;
 			-set|--set-epoch-time) TMUX_SESSION_NAME="$(date +"%s")";;
 			-ns|--new-session) TMUX_SESSION_NAME="${TMUX_SESSION_NAME}_$(date +%s)";;
 			-q|-quiet) QUIET="true";;
