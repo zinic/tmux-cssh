@@ -59,6 +59,12 @@ If you want to just open your multiple server in a grid, but don't want every ke
 $ tmux-cssh -cs [dev\|test\|productive]_servers -ds
 ```
 
+It is possible to use different tmux layouts, default is tiled:
+```
+$ tmux-cssh -tl even-vertical -u my-user-name my_server 1.2.3.4 11.22.33.44 my_second_server my_third_server my_and_so_on_server
+```
+
+
 ## User-Home-Settings-file ~/.tmux-cssh
 
 This file is located in the user home directory, from _tmux-cssh_-calling user, and includes predefined parameters in a single line.
