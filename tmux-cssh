@@ -18,7 +18,7 @@ CONFIG_SETTING_NAME=""
 
 # Outputs script syntax and help
 syntax() {
-	echo "Syntax: ${THIS_BASENAME} [-h|-u [user]|-c|--certificate|-i|--identity [path to certificate-/identity-file]|-sc [ssh-server-connect-string]|-sa [additional ssh arguments]|-ss,-csc [ssh-command]|-ts [session-name]|-ns|-set|-q|-f [filename]|-cs [name of config-parameters to use]|[-dc,-ds]]"
+	echo "Syntax: ${THIS_BASENAME} [-h|-u [user]|-c|--certificate|-i|--identity [path to certificate-/identity-file]|-sc [ssh-server-connect-string]|-sa [additional ssh arguments]|-ss,-csc [ssh-command]|-ts [session-name]|-ns|-tl [tmux-layout]|-set|-q|-f [filename]|-cs [name of config-parameters to use]|[-dc,-ds]]"
 	echo
 
 	echo "-h | --help                                This help."
