@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 THIS_BASENAME=$(basename "$0")
-TMUX_SESSION_NAME=$THIS_BASENAME
+TMUX_SESSION_NAME="tmux-cssh"
 HOSTS=""
 USER=""
 IDENTITY=""
