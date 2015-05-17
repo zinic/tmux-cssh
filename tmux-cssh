@@ -251,11 +251,11 @@ for host in ${HOSTS}; do
 	# Separate host and port, if given
 	if echo ${host} | grep -q ':'; then
 		# Remove port from string
-		hostname=${echo $host | cut -d: -f1}
+		hostname=$(echo $host | cut -d: -f1)
 		connectString=${hostname}
 
 		# Remove host from string
-		port=${echo $host | cut -d: -f2}
+		port=$(echo $host | cut -d: -f2)
 	else
 		connectString=${host}
 	fi
