@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 THIS_BASENAME=$(basename "$0")
 TMUX_SESSION_NAME="tmux-cssh"
@@ -90,7 +90,7 @@ analyseParameters() {
 			-c|--certificate|-i|--identity) IDENTITY="$2"; shift;;
 			-sc|--ssh-server-connect-string)
 				if [ "$2" != "" ]; then
-					if [ "$HOSTS" == "" ]; then
+					if [ -z $HOSTS ]; then
 						HOSTS="$2"
 					else
 						HOSTS="${HOSTS},$2"
@@ -118,7 +118,7 @@ analyseParameters() {
 			-dc|--dont-clusterize|-ds|--dont-synchronize) SYNCHRONIZE_PANES="false";;
 			*)
 				if [ "$1" != "" ]; then
-					if [ "$HOSTS" == "" ]; then
+					if [ -z "$HOSTS" ]; then
 						HOSTS="$1"
 					else
 						HOSTS="${HOSTS},$1"
@@ -173,7 +173,7 @@ get_parameters_from_config_settings_name() {
 #            $2 = TMUX-Session-Name
 synchronizePanes() {
 	# Set pane synchronisation
-	if [ "$1" == "true" ]; then
+	if [ "$1" = "true" ]; then
 		syncValue='on'
 	else
 		syncValue='off'
@@ -183,7 +183,7 @@ synchronizePanes() {
 }
 
 # Check if tmux is available
-if [ "$(which tmux)" == "" ]; then
+if [ -z "$(which tmux)" ]; then
 	echo "${THIS_BASENAME}"
 	echo
 
@@ -197,7 +197,7 @@ fi
 analyseParameters "$@"
 
 # Check if SSH-Command is available
-if [ "$(which ${SSH_COMMAND})" == "" ]; then
+if [ -z "$(which ${SSH_COMMAND})" ]; then
 	echo "SSH-Command '${SSH_COMMAND}' not found via 'which'."
 
 	exit
@@ -220,7 +220,7 @@ if [ "$FILENAME" != "" ]; then
 fi
 
 # Check if tmux-session is available
-if (( $(tmux ls 2> /dev/null | grep "${TMUX_SESSION_NAME}" | wc -l) > 0 )) ; then
+if tmux ls 2> /dev/null | grep -q "${TMUX_SESSION_NAME}"; then
 	# Setup synchronizing panes
 	synchronizePanes ${SYNCHRONIZE_PANES} ${TMUX_SESSION_NAME}
 
@@ -230,7 +230,7 @@ if (( $(tmux ls 2> /dev/null | grep "${TMUX_SESSION_NAME}" | wc -l) > 0 )) ; the
 fi
 
 # Hosts available ?
-if [ "${HOSTS}" == "" ]; then
+if [ -z "${HOSTS}" ]; then
 	output "* Hosts not given."
 
 	syntax
@@ -241,9 +241,9 @@ fi
 initTmuxCall="true"
 
 # Walk through hosts
-IFS=","
+HOSTS=$(echo $HOSTS | tr , ' ')
 
-for host in ${HOSTS[@]}; do
+for host in ${HOSTS}; do
 	connectString=""
 	hostname=""
 	port=""
@@ -251,11 +251,11 @@ for host in ${HOSTS[@]}; do
 	# Separate host and port, if given
 	if echo ${host} | grep -q ':'; then
 		# Remove port from string
-		hostname=${host/:*}
+		hostname=$(echo $host | cut -d: -f1)
 		connectString=${hostname}
 
 		# Remove host from string
-		port=${host/*:}
+		port=$(echo $host | cut -d: -f2)
 	else
 		connectString=${host}
 	fi
@@ -287,12 +287,12 @@ for host in ${HOSTS[@]}; do
 	output "* Connecting '${connectString}'"
 
 	# First Call, inits the tmux-session
-	if [ "${initTmuxCall}" == "true" ]; then
+	if [ "${initTmuxCall}" = "true" ]; then
 		tmux new-session -d -s "${TMUX_SESSION_NAME}" "${connectString}"
 
     # If our initial ssh connection has failed, do not mark initTmuxCall as false since tmux will have aborted.
     # We'll need to try to start a new tmux session for the next host.
-    if (( $(tmux ls 2> /dev/null | grep "${TMUX_SESSION_NAME}" | wc -l) > 0 )) ; then
+    if tmux ls 2> /dev/null | grep -q "${TMUX_SESSION_NAME}"; then
 		  initTmuxCall="false"
     fi
 	else
@@ -301,10 +301,8 @@ for host in ${HOSTS[@]}; do
 	fi
 done
 
-unset IFS
-
 # If no session was able to start, say so and just exit.
-if (( $(tmux ls 2> /dev/null | grep "${TMUX_SESSION_NAME}" | wc -l) == 0 )) ; then
+if ! tmux ls 2> /dev/null | grep -q "${TMUX_SESSION_NAME}"; then
   echo "All connections have failed."
   exit 1
 fi
