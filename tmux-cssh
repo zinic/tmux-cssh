@@ -83,7 +83,7 @@ output() {
 # Analyse given parameter into environment
 analyseParameters() {
 	# Walk through parameters
-	for param in "$@"; do
+	while [ $# -gt 0 ]; do
 		case "$1" in
 			-h|--help) syntax; exit;;
 			-u|--user) USER="$2"; shift;;
