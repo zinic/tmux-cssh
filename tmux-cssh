@@ -98,7 +98,7 @@ analyseParameters() {
 				fi
 				shift;;
 			-sa|--ssh_args) SSH_ARGS="${SSH_ARGS} $2"; shift;;
-			-ss|-csc|--ssh_command,--custom-ssh-command) SSH_COMMAND="$2"; shift;;
+			-ss|-csc|--ssh_command|--custom-ssh-command) SSH_COMMAND="$2"; shift;;
 			-ts|--tmux-session-name) TMUX_SESSION_NAME="$2"; shift;;
 			-tl|--tmuxlayout)
 				case "$2" in
