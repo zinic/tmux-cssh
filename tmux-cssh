@@ -150,7 +150,7 @@ get_parameters_from_config_settings_name() {
 			while read configSettingsRow; do
 				# Seperate Name and parameters
 				configSettingsName=$(echo ${configSettingsRow} | cut -d ":" -f 1)
-				configSettingsParameters=$(echo ${configSettingsRow} | cut -d ":" -f 2)
+				configSettingsParameters=$(echo ${configSettingsRow} | cut -d ":" -f 2-)
 
 				# Match name against given settings-name
 				matched=$(echo ${configSettingsName} | grep "^${configSettingName}$")
