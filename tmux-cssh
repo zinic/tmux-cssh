@@ -13,12 +13,12 @@ TMUX_LAYOUT="tiled"
 
 # Config-file in home directory
 CONFIG_FILENAME=".tmux-cssh"
-HOME_CONFIG_FILENAME="$(echo ~)/${CONFIG_FILENAME}"
+USE_CONFIG_FILENAME="$(echo ~)/${CONFIG_FILENAME}"
 CONFIG_SETTING_NAME=""
 
 # Outputs script syntax and help
 syntax() {
-	echo "Syntax: ${THIS_BASENAME} [-h|-u [user]|-c|--certificate|-i|--identity [path to certificate-/identity-file]|-sc [ssh-server-connect-string]|-sa [additional ssh arguments]|-ss,-csc [ssh-command]|-ts [session-name]|-ns|-tl [tmux-layout]|-set|-q|-f [filename]|-cs [name of config-parameters to use]|[-dc,-ds]]"
+	echo "Syntax: ${THIS_BASENAME} [-h|-u [user]|-c|--certificate|-i|--identity [path to certificate-/identity-file]|-sc [ssh-server-connect-string]|-sa [additional ssh arguments]|-ss,-csc [ssh-command]|-ts [session-name]|-ns|-tl [tmux-layout]|-set|-q|-f [filename]|-cs [name of config-parameters to use]|[-dc,-ds][-cf config-file]]"
 	echo
 
 	echo "-h | --help                                This help."
@@ -59,11 +59,14 @@ syntax() {
 	echo "-f | --filename                            Filename of textfile to get -sc connection-strings from, line separated, multiple."
 	echo
 
-	echo "-cs | --config-setting                     Name of config-settings which should be gotten from config-file '${HOME_CONFIG_FILENAME}'. This can be a grep-regular expression to find the name(s), multiple."
+	echo "-cs | --config-setting                     Name of config-settings which should be gotten from config-file '${USE_CONFIG_FILENAME}'. This can be a grep-regular expression to find the name(s), multiple."
 	echo
 
 	echo "-dc | --dont-clusterize                    Don't clusterize ..."
 	echo "-ds | --dont-synchronize                   Don't synchronize keyboard in panes, default: tmux should synchronize."
+	echo
+
+	echo "-cf | --config-file                        Config-file to use, (Default ${USE_CONFIG_FILENAME}), Designed for option to switch between multiples config-files via one tmux-cssh call."
 	echo
 
 	echo "* Other arguments will be interpreted as '-sc'."
@@ -116,6 +119,7 @@ analyseParameters() {
 				get_parameters_from_config_settings_name "$2"
 				shift;;
 			-dc|--dont-clusterize|-ds|--dont-synchronize) SYNCHRONIZE_PANES="false";;
+			-cf|--config-file) USE_CONFIG_FILENAME="$2"; shift;;
 			*)
 				if [ "$1" != "" ]; then
 					if [ -z "$HOSTS" ]; then
@@ -137,7 +141,7 @@ get_parameters_from_config_settings_name() {
 	# Check if a config-settings name is given
 	if [ "${configSettingName}" != "" ]; then
 		# If home-config-file available
-		if [ -f "${HOME_CONFIG_FILENAME}" ]; then
+		if [ -f "${USE_CONFIG_FILENAME}" ]; then
 			output "* Searching for config setting name '${configSettingName}' ..."
 
 			# Read every line from config-settings file
@@ -156,14 +160,14 @@ get_parameters_from_config_settings_name() {
 					output "* Matched config-settings '${matched}', analysing parameters, ${configSettingsParameters} ..."
 					analyseParametersString="${analyseParametersString} ${configSettingsParameters}"
 				fi
-			done < "${HOME_CONFIG_FILENAME}"
+			done < "${USE_CONFIG_FILENAME}"
 
 			# Analyse parameters string
 			if [ "${analyseParametersString}" != "" ]; then
 					analyseParameters ${analyseParametersString}
 			fi
 		else
-			output "No config-settings-file '${HOME_CONFIG_FILENAME}' available."
+			output "No config-file '${USE_CONFIG_FILENAME}' available."
 		fi
 	fi
 }
