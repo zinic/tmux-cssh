@@ -10,6 +10,7 @@ SSH_COMMAND="ssh"
 SSH_ARGS=""
 SYNCHRONIZE_PANES="true"
 TMUX_LAYOUT="tiled"
+QUIET="false"
 
 # Config-file in home directory
 CONFIG_FILENAME=".tmux-cssh"
@@ -72,7 +73,7 @@ syntax() {
 	echo "* Other arguments will be interpreted as '-sc'."
 	echo
 
-	echo "* For a maybe newer version of ${THIS_BASENAME} take a look on https://github.com/dennishafemann/tmux-cssh"
+	echo "* For a maybe newer version of ${THIS_BASENAME} take a look on https://github.com/zinic/tmux-cssh"
 	echo
 }
 
@@ -93,7 +94,7 @@ analyseParameters() {
 			-c|--certificate|-i|--identity) IDENTITY="$2"; shift;;
 			-sc|--ssh-server-connect-string)
 				if [ "$2" != "" ]; then
-					if [ -z $HOSTS ]; then
+					if [ -z "$HOSTS" ]; then
 						HOSTS="$2"
 					else
 						HOSTS="${HOSTS},$2"
@@ -236,7 +237,6 @@ fi
 # Hosts available ?
 if [ -z "${HOSTS}" ]; then
 	output "* Hosts not given."
-
 	syntax
 
 	exit
@@ -294,14 +294,13 @@ for host in ${HOSTS}; do
 	if [ "${initTmuxCall}" = "true" ]; then
 		tmux new-session -d -s "${TMUX_SESSION_NAME}" "${connectString}"
 
-    # If our initial ssh connection has failed, do not mark initTmuxCall as false since tmux will have aborted.
-    # We'll need to try to start a new tmux session for the next host.
-    if tmux ls 2> /dev/null | grep -q "${TMUX_SESSION_NAME}"; then
-		  initTmuxCall="false"
-    fi
+        # If our initial ssh connection has failed, do not mark initTmuxCall as false since tmux will have aborted.
+        # We'll need to try to start a new tmux session for the next host.
+        if tmux ls 2> /dev/null | grep -q "${TMUX_SESSION_NAME}"; then
+              initTmuxCall="false"
+        fi
 	else
-    tmux split-window -t "${TMUX_SESSION_NAME}" "${connectString}" && \
-    tmux select-layout -t "${TMUX_SESSION_NAME}" "${TMUX_LAYOUT}"
+        tmux split-window -t "${TMUX_SESSION_NAME}" "${connectString}" && tmux select-layout -t "${TMUX_SESSION_NAME}" "${TMUX_LAYOUT}"
 	fi
 done
 

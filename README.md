@@ -17,10 +17,6 @@ tmux - Terminal-Multiplexer
 $ sudo apt-get install tmux
 ```
 
-## Deb-Packages
-
-Take a look at the pre-build [deb-packages](https://github.com/dennishafemann/tmux-cssh/tree/deb-package/deb-packages).
-
 ## Usage / Example
 
 First, take a look at the help- and syntax-texts:
