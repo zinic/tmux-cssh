@@ -225,7 +225,7 @@ if [ "$FILENAME" != "" ]; then
 fi
 
 # Check if tmux-session is available
-if tmux ls 2> /dev/null | grep -q "${TMUX_SESSION_NAME}"; then
+if tmux ls 2> /dev/null | grep -wq "${TMUX_SESSION_NAME}"; then
 	# Setup synchronizing panes
 	synchronizePanes ${SYNCHRONIZE_PANES} ${TMUX_SESSION_NAME}
 
