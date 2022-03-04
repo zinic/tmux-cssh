@@ -106,7 +106,7 @@ analyseParameters() {
 			-ts|--tmux-session-name) TMUX_SESSION_NAME="$2"; shift;;
 			-tl|--tmuxlayout)
 				case "$2" in
-					h|h) TMUX_LAYOUT="even-horizontal";;
+					h|H) TMUX_LAYOUT="even-horizontal";;
 					v|V) TMUX_LAYOUT="even-vertical";;
 					t|T) TMUX_LAYOUT="tiled";;
 					*) TMUX_LAYOUT="$2";;
