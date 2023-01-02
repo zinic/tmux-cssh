@@ -48,6 +48,9 @@ syntax() {
 	echo "-tl | --tmuxlayout                         Use different layouts (tiled, even-vertical... ) see in man tmux for more information"
 	echo
 
+	echo "-sw | --splitwindow                        Create a new Window after the max number of Panes is reached. e.g. -sw 6"
+	echo
+
 	echo "-set | --set-epoch-time                    Like -ts, but quickly set the current epoch time, overwrites -ts"
 	echo
 
@@ -112,6 +115,7 @@ analyseParameters() {
 					*) TMUX_LAYOUT="$2";;
 				esac
 			shift;;
+			-sw|--splitwindow) SPLIT_NUM="$2"; shift;;
 			-set|--set-epoch-time) TMUX_SESSION_NAME="$(date +"%s")";;
 			-ns|--new-session) TMUX_SESSION_NAME="${TMUX_SESSION_NAME}_$(date +%s)";;
 			-q|-quiet) QUIET="true";;
@@ -148,13 +152,13 @@ get_parameters_from_config_settings_name() {
 			# Read every line from config-settings file
 			analyseParametersString=""
 
-			while read configSettingsRow; do
+			while read -r configSettingsRow; do
 				# Seperate Name and parameters
-				configSettingsName=$(echo ${configSettingsRow} | cut -d ":" -f 1)
-				configSettingsParameters=$(echo ${configSettingsRow} | cut -d ":" -f 2-)
+				configSettingsName=$(echo "${configSettingsRow}" | cut -d ":" -f 1)
+				configSettingsParameters=$(echo "${configSettingsRow}" | cut -d ":" -f 2-)
 
 				# Match name against given settings-name
-				matched=$(echo ${configSettingsName} | grep "^${configSettingName}$")
+				matched=$(echo "${configSettingsName}" | grep "^${configSettingName}$")
 
 				# Matched ?
 				if [ "${matched}" != "" ]; then
@@ -165,12 +169,12 @@ get_parameters_from_config_settings_name() {
 
 			# Analyse parameters string
 			if [ "${analyseParametersString}" != "" ]; then
-					analyseParameters ${analyseParametersString}
+					analyseParameters "${analyseParametersString}"
 			fi
 		else
 			output "No config-file '${USE_CONFIG_FILENAME}' available."
-		fi
 	fi
+fi
 }
 
 # Set synchronization for given tmux-session-names
@@ -202,7 +206,7 @@ fi
 analyseParameters "$@"
 
 # Check if SSH-Command is available
-if [ -z "$(which ${SSH_COMMAND})" ]; then
+if [ -z "$(which "${SSH_COMMAND}")" ]; then
 	echo "SSH-Command '${SSH_COMMAND}' not found via 'which'."
 
 	exit
@@ -215,7 +219,7 @@ if [ "$FILENAME" != "" ]; then
 	# Walk through all given filenames
 	for filename in $FILENAME; do
 		# Walk through all available connection strings
-		while read connHost; do
+		while read -r connHost; do
 			output "* Adding host '${connHost}'"
 
 			# Add connection string to currently set hosts
@@ -227,7 +231,7 @@ fi
 # Check if tmux-session is available
 if tmux ls 2> /dev/null | grep -wq "${TMUX_SESSION_NAME}"; then
 	# Setup synchronizing panes
-	synchronizePanes ${SYNCHRONIZE_PANES} ${TMUX_SESSION_NAME}
+	synchronizePanes ${SYNCHRONIZE_PANES} "${TMUX_SESSION_NAME}"
 
 	# Attach to available tmux-session
 	tmux attach -t "${TMUX_SESSION_NAME}"
@@ -245,7 +249,7 @@ fi
 initTmuxCall="true"
 
 # Walk through hosts
-HOSTS=$(echo $HOSTS | tr , ' ')
+HOSTS=$(echo "$HOSTS" | tr , ' ')
 
 for host in ${HOSTS}; do
 	connectString=""
@@ -253,13 +257,13 @@ for host in ${HOSTS}; do
 	port=""
 
 	# Separate host and port, if given
-	if echo ${host} | grep -q ':'; then
+	if echo "${host}" | grep -q ':'; then
 		# Remove port from string
-		hostname=$(echo $host | cut -d: -f1)
+		hostname=$(echo "$host" | cut -d: -f1)
 		connectString=${hostname}
 
 		# Remove host from string
-		port=$(echo $host | cut -d: -f2)
+		port=$(echo "$host" | cut -d: -f2)
 	else
 		connectString=${host}
 	fi
@@ -279,7 +283,7 @@ for host in ${HOSTS}; do
 		connectString="-i ${IDENTITY} ${connectString}"
 	fi
 
-    # Add ssh_args-part
+	# Add ssh_args-part
 	if [ "${SSH_ARGS}" != "" ]; then
 		connectString="${SSH_ARGS} ${connectString}"
 	fi
@@ -287,31 +291,42 @@ for host in ${HOSTS}; do
 	# Finalize connect-string
 	connectString="${SSH_COMMAND} ${connectString}"
 
+	TSN="$(echo "${TMUX_SESSION_NAME}"|cut -d: -f1)"
 	# Output
 	output "* Connecting '${connectString}'"
 
 	# First Call, inits the tmux-session
 	if [ "${initTmuxCall}" = "true" ]; then
 		tmux new-session -d -s "${TMUX_SESSION_NAME}" "${connectString}"
-
-        # If our initial ssh connection has failed, do not mark initTmuxCall as false since tmux will have aborted.
-        # We'll need to try to start a new tmux session for the next host.
-        if tmux ls 2> /dev/null | grep -q "${TMUX_SESSION_NAME}"; then
-              initTmuxCall="false"
-        fi
+		[ "$SPLIT_NUM" ] && SPLIT_COUNT=1
+		# If our initial ssh connection has failed, do not mark initTmuxCall as false since tmux will have aborted.
+		# We'll need to try to start a new tmux session for the next host.
+		if tmux ls 2> /dev/null | grep -q "${TMUX_SESSION_NAME}"; then
+			initTmuxCall="false"
+		fi
 	else
-        tmux split-window -t "${TMUX_SESSION_NAME}" "${connectString}" && tmux select-layout -t "${TMUX_SESSION_NAME}" "${TMUX_LAYOUT}"
+		if [ "$SPLIT_NUM" ] && [ $(( SPLIT_COUNT % SPLIT_NUM )) -eq 0 ]; then
+			tmux new-window -t "${TSN}" "${connectString}" && \
+				tmux select-layout -t "${TMUX_SESSION_NAME}" "${TMUX_LAYOUT}"
+			TSW="$(tmux lsp -s -t "${TSN}" -F\#I |tail -n 1)"
+			TMUX_SESSION_NAME="${TSN}:${TSW}"
+	else
+		tmux split-window -t "${TMUX_SESSION_NAME}" "${connectString}" && \
+			tmux select-layout -t "${TMUX_SESSION_NAME}" "${TMUX_LAYOUT}"
+	fi
+	SPLIT_COUNT=$(( SPLIT_COUNT+1 ))
+	synchronizePanes ${SYNCHRONIZE_PANES} "${TMUX_SESSION_NAME}"
 	fi
 done
 
 # If no session was able to start, say so and just exit.
-if ! tmux ls 2> /dev/null | grep -q "${TMUX_SESSION_NAME}"; then
-  echo "All connections have failed."
-  exit 1
+if ! tmux ls 2> /dev/null | grep -q "${TSN}"; then
+	echo "All connections have failed."
+	exit 1
 fi
 
 # Setup synchronizing panes
-synchronizePanes ${SYNCHRONIZE_PANES} ${TMUX_SESSION_NAME}
+synchronizePanes ${SYNCHRONIZE_PANES} "${TMUX_SESSION_NAME}"
 
 # Attach to tmux session
 tmux attach-session -t "${TMUX_SESSION_NAME}"
