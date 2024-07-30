@@ -38,7 +38,7 @@ syntax() {
 	echo "-sa | --ssh_args                           SSH connection arguments, used on every session."
 	echo
 
-	echo "-ss, -cs |"
+	echo "-ss, -csc |"
 	echo "	--ssh_command, --custom-cssh-command     SSH command to use."
 	echo
 
